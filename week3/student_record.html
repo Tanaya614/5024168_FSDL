@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Record System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f7fb;
+            color: #202124;
+        }
+        .page {
+            max-width: 760px;
+            margin: 32px auto;
+            padding: 24px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 2rem;
+            text-align: center;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d9e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        button {
+            background: #2f80ed;
+            color: #fff;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover {
+            background: #1366d6;
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-top: 24px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+        th, td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th {
+            background: #f8fafc;
+            font-weight: 700;
+        }
+        .delete-btn {
+            background: #eb5757;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background: #c62828;
+        }
+        .empty-message {
+            margin: 16px 0;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <h1>Student Record System</h1>
+        <p>Enter student information and save it in the table below.</p>
+
+        <div class="form-row">
+            <div>
+                <label for="studentName">Name</label>
+                <input id="studentName" type="text" placeholder="Enter student name" />
+            </div>
+            <div>
+                <label for="studentRoll">Roll No.</label>
+                <input id="studentRoll" type="text" placeholder="Enter roll number" />
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label for="studentClass">Class</label>
+                <input id="studentClass" type="text" placeholder="Enter class" />
+            </div>
+            <div>
+                <label for="studentMarks">Marks</label>
+                <input id="studentMarks" type="number" placeholder="Enter total marks" />
+            </div>
+        </div>
+
+        <button id="addRecordBtn">Add Student</button>
+
+        <div class="table-container">
+            <table id="recordTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Roll No.</th>
+                        <th>Class</th>
+                        <th>Marks</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="recordBody">
+                    <tr>
+                        <td colspan="5" class="empty-message">No records yet. Add a student to start.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const nameInput = document.getElementById('studentName');
+        const rollInput = document.getElementById('studentRoll');
+        const classInput = document.getElementById('studentClass');
+        const marksInput = document.getElementById('studentMarks');
+        const addButton = document.getElementById('addRecordBtn');
+        const recordBody = document.getElementById('recordBody');
+
+        const records = [];
+
+        function refreshTable() {
+            recordBody.innerHTML = '';
+            if (records.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = '<td colspan="5" class="empty-message">No records yet. Add a student to start.</td>';
+                recordBody.appendChild(emptyRow);
+                return;
+            }
+
+            records.forEach((record, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${record.name}</td>
+                    <td>${record.roll}</td>
+                    <td>${record.className}</td>
+                    <td>${record.marks}</td>
+                    <td><button class="delete-btn" data-index="${index}">Delete</button></td>
+                `;
+                recordBody.appendChild(row);
+            });
+
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const index = Number(button.dataset.index);
+                    records.splice(index, 1);
+                    refreshTable();
+                });
+            });
+        }
+
+        addButton.addEventListener('click', () => {
+            const name = nameInput.value.trim();
+            const roll = rollInput.value.trim();
+            const className = classInput.value.trim();
+            const marks = marksInput.value.trim();
+
+            if (!name || !roll || !className || !marks) {
+                alert('Please fill in all fields before adding a record.');
+                return;
+            }
+
+            records.push({ name, roll, className, marks });
+            nameInput.value = '';
+            rollInput.value = '';
+            classInput.value = '';
+            marksInput.value = '';
+            refreshTable();
+        });
+
+        refreshTable();
+    </script>
+</body>
+</html>
