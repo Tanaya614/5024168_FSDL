@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>College Management System</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f3f4f6;
+            color: #1f2937;
+        }
+        .container {
+            max-width: 960px;
+            margin: 32px auto;
+            padding: 24px;
+            background: #ffffff;
+            border-radius: 18px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+        }
+        h1 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 2.2rem;
+        }
+        p {
+            text-align: center;
+            color: #4b5563;
+            margin-top: 8px;
+        }
+        .grid {
+            display: grid;
+            gap: 18px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            margin-top: 28px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        input,
+        select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            background: #f8fafc;
+            font-size: 1rem;
+        }
+        button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 18px;
+            margin-top: 14px;
+            border: none;
+            border-radius: 12px;
+            background: #2563eb;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .stats {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            margin-top: 24px;
+        }
+        .stat-card {
+            padding: 18px;
+            border-radius: 16px;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        .stat-card strong {
+            display: block;
+            font-size: 1.9rem;
+            margin-bottom: 8px;
+        }
+        .table-wrapper {
+            margin-top: 28px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th,
+        td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 700;
+        }
+        .delete-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background: #b91c1c;
+        }
+        .empty-row td {
+            text-align: center;
+            color: #6b7280;
+            padding: 28px 0;
+        }
+        @media (max-width: 760px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>College Management System</h1>
+        <p>Add students, assign departments, and manage student records easily.</p>
+
+        <div class="grid">
+            <div>
+                <label for="studentName">Student Name</label>
+                <input id="studentName" type="text" placeholder="Type student name" />
+            </div>
+            <div>
+                <label for="studentRoll">Roll Number</label>
+                <input id="studentRoll" type="text" placeholder="Type roll number" />
+            </div>
+            <div>
+                <label for="studentDept">Department</label>
+                <select id="studentDept">
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Mechanical">Mechanical</option>
+                    <option value="Civil">Civil</option>
+                    <option value="Business">Business</option>
+                </select>
+            </div>
+            <div>
+                <label for="studentYear">Year</label>
+                <select id="studentYear">
+                    <option value="1st Year">1st Year</option>
+                    <option value="2nd Year">2nd Year</option>
+                    <option value="3rd Year">3rd Year</option>
+                    <option value="4th Year">4th Year</option>
+                </select>
+            </div>
+        </div>
+        <button id="addStudent">Add Student</button>
+
+        <div class="stats">
+            <div class="stat-card">
+                <strong id="totalStudents">0</strong>
+                Total Students
+            </div>
+            <div class="stat-card">
+                <strong id="deptCount">0</strong>
+                Departments Used
+            </div>
+            <div class="stat-card">
+                <strong id="yearCount">0</strong>
+                Years Used
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Roll</th>
+                        <th>Department</th>
+                        <th>Year</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="studentTable">
+                    <tr class="empty-row">
+                        <td colspan="5">No student records yet. Add a student to begin.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const studentName = document.getElementById('studentName');
+        const studentRoll = document.getElementById('studentRoll');
+        const studentDept = document.getElementById('studentDept');
+        const studentYear = document.getElementById('studentYear');
+        const addStudent = document.getElementById('addStudent');
+        const studentTable = document.getElementById('studentTable');
+        const totalStudents = document.getElementById('totalStudents');
+        const deptCount = document.getElementById('deptCount');
+        const yearCount = document.getElementById('yearCount');
+
+        const records = [];
+
+        function updateStats() {
+            totalStudents.textContent = records.length;
+            const departments = new Set(records.map(r => r.department));
+            const years = new Set(records.map(r => r.year));
+            deptCount.textContent = departments.size;
+            yearCount.textContent = years.size;
+        }
+
+        function renderTable() {
+            studentTable.innerHTML = '';
+            if (records.length === 0) {
+                const row = document.createElement('tr');
+                row.className = 'empty-row';
+                row.innerHTML = '<td colspan="5">No student records yet. Add a student to begin.</td>';
+                studentTable.appendChild(row);
+                return;
+            }
+
+            records.forEach((record, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${record.name}</td>
+                    <td>${record.roll}</td>
+                    <td>${record.department}</td>
+                    <td>${record.year}</td>
+                    <td><button class="delete-btn" data-index="${index}">Delete</button></td>
+                `;
+                studentTable.appendChild(row);
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const index = Number(button.dataset.index);
+                    records.splice(index, 1);
+                    renderTable();
+                    updateStats();
+                });
+            });
+        }
+
+        addStudent.addEventListener('click', () => {
+            const name = studentName.value.trim();
+            const roll = studentRoll.value.trim();
+            const department = studentDept.value;
+            const year = studentYear.value;
+
+            if (!name || !roll) {
+                alert('Please enter a name and roll number.');
+                return;
+            }
+
+            records.push({ name, roll, department, year });
+            studentName.value = '';
+            studentRoll.value = '';
+            studentDept.value = 'Computer Science';
+            studentYear.value = '1st Year';
+            renderTable();
+            updateStats();
+        });
+
+        renderTable();
+        updateStats();
+    </script>
+</body>
+</html>
