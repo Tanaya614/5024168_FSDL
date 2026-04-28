@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Management System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #eef2f7;
+            color: #1f2937;
+        }
+        .wrapper {
+            max-width: 900px;
+            margin: 28px auto;
+            padding: 24px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        p {
+            margin-top: 0;
+            color: #4b5563;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            background: #f9fafb;
+            font-size: 1rem;
+        }
+        button {
+            margin-top: 16px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .stats {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            flex: 1;
+            min-width: 180px;
+            padding: 16px;
+            border-radius: 14px;
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+        }
+        .stat-card strong {
+            display: block;
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+        .table-wrapper {
+            margin-top: 24px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th {
+            text-align: left;
+            background: #f3f4f6;
+            font-weight: 700;
+        }
+        .delete-btn {
+            background: #dc2626;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background: #b91c1c;
+        }
+        .empty-row td {
+            text-align: center;
+            color: #6b7280;
+            padding: 28px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <h1>Hotel Management System</h1>
+        <p>Manage guest bookings quickly with a simple add, list, and delete interface.</p>
+
+        <div class="grid">
+            <div>
+                <label for="guestName">Guest Name</label>
+                <input id="guestName" type="text" placeholder="Enter guest name" />
+            </div>
+            <div>
+                <label for="roomNumber">Room Number</label>
+                <input id="roomNumber" type="text" placeholder="Enter room number" />
+            </div>
+            <div>
+                <label for="roomType">Room Type</label>
+                <select id="roomType">
+                    <option value="Single">Single</option>
+                    <option value="Double">Double</option>
+                    <option value="Suite">Suite</option>
+                </select>
+            </div>
+            <div>
+                <label for="checkIn">Check-in Date</label>
+                <input id="checkIn" type="date" />
+            </div>
+            <div>
+                <label for="checkOut">Check-out Date</label>
+                <input id="checkOut" type="date" />
+            </div>
+        </div>
+
+        <button id="addBooking">Add Booking</button>
+
+        <div class="stats">
+            <div class="stat-card">
+                <strong id="totalBookings">0</strong>
+                Total Bookings
+            </div>
+            <div class="stat-card">
+                <strong id="totalRooms">0</strong>
+                Rooms Booked
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Guest</th>
+                        <th>Room</th>
+                        <th>Type</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="bookingBody">
+                    <tr class="empty-row">
+                        <td colspan="6">No bookings yet. Add a guest to start.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const guestName = document.getElementById('guestName');
+        const roomNumber = document.getElementById('roomNumber');
+        const roomType = document.getElementById('roomType');
+        const checkIn = document.getElementById('checkIn');
+        const checkOut = document.getElementById('checkOut');
+        const addBooking = document.getElementById('addBooking');
+        const bookingBody = document.getElementById('bookingBody');
+        const totalBookings = document.getElementById('totalBookings');
+        const totalRooms = document.getElementById('totalRooms');
+
+        const bookings = [];
+
+        function updateStats() {
+            totalBookings.textContent = bookings.length;
+            totalRooms.textContent = bookings.length;
+        }
+
+        function renderBookings() {
+            bookingBody.innerHTML = '';
+            if (bookings.length === 0) {
+                const row = document.createElement('tr');
+                row.className = 'empty-row';
+                row.innerHTML = '<td colspan="6">No bookings yet. Add a guest to start.</td>';
+                bookingBody.appendChild(row);
+                return;
+            }
+
+            bookings.forEach((booking, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${booking.guest}</td>
+                    <td>${booking.room}</td>
+                    <td>${booking.type}</td>
+                    <td>${booking.checkIn}</td>
+                    <td>${booking.checkOut}</td>
+                    <td><button class="delete-btn" data-index="${index}">Delete</button></td>
+                `;
+                bookingBody.appendChild(row);
+            });
+
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const index = Number(button.dataset.index);
+                    bookings.splice(index, 1);
+                    renderBookings();
+                    updateStats();
+                });
+            });
+        }
+
+        addBooking.addEventListener('click', () => {
+            const guest = guestName.value.trim();
+            const room = roomNumber.value.trim();
+            const type = roomType.value;
+            const inDate = checkIn.value;
+            const outDate = checkOut.value;
+
+            if (!guest || !room || !inDate || !outDate) {
+                alert('Please complete all booking fields before adding.');
+                return;
+            }
+
+            bookings.push({ guest, room, type, checkIn: inDate, checkOut: outDate });
+            guestName.value = '';
+            roomNumber.value = '';
+            roomType.value = 'Single';
+            checkIn.value = '';
+            checkOut.value = '';
+            renderBookings();
+            updateStats();
+        });
+
+        renderBookings();
+        updateStats();
+    </script>
+</body>
+</html>
