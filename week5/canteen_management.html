@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canteen Management System</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #eef2f6;
+            color: #1f2937;
+        }
+        .page {
+            max-width: 980px;
+            margin: 24px auto;
+            padding: 24px;
+            background: #ffffff;
+            border-radius: 18px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, .08);
+        }
+        h1 {
+            margin: 0 0 10px;
+            text-align: center;
+            font-size: 2.2rem;
+        }
+        p {
+            margin: 0 0 24px;
+            text-align: center;
+            color: #4b5563;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        .card {
+            padding: 20px;
+            border-radius: 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+        .menu-list {
+            display: grid;
+            gap: 18px;
+            margin-top: 18px;
+        }
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+        }
+        .item-info {
+            display: grid;
+            gap: 4px;
+        }
+        .item-info span {
+            font-size: 0.95rem;
+        }
+        .item-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, auto);
+            gap: 10px;
+        }
+        button,
+        .checkout-btn {
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .quantity {
+            width: 46px;
+            text-align: center;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 8px 0;
+            background: #f8fafc;
+            cursor: default;
+        }
+        .cart-list {
+            margin-top: 18px;
+            width: 100%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+        th {
+            background: #f1f5f9;
+        }
+        .cart-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .total {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .empty-message {
+            color: #6b7280;
+            text-align: center;
+            padding: 20px 0;
+        }
+        .delete-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background: #b91c1c;
+        }
+        @media (max-width: 760px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <h1>Canteen Management System</h1>
+        <p>Pick food items, manage your cart, and see the total bill instantly.</p>
+        <div class="grid">
+            <section class="card">
+                <h2>Menu</h2>
+                <div class="menu-list" id="menuList"></div>
+            </section>
+            <section class="card">
+                <h2>Your Cart</h2>
+                <div class="cart-list">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Price</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="cart-footer">
+                    <div class="total" id="cartTotal">Total: ₹0</div>
+                    <button class="checkout-btn" id="checkoutBtn">Checkout</button>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const menuItems = [
+            { name: 'Veg Burger', price: 90 },
+            { name: 'Paneer Wrap', price: 110 },
+            { name: 'French Fries', price: 50 },
+            { name: 'Cold Drink', price: 40 },
+            { name: 'Sandwich', price: 85 },
+            { name: 'Samosa', price: 20 }
+        ];
+
+        const cart = new Map();
+        const menuList = document.getElementById('menuList');
+        const cartBody = document.getElementById('cartBody');
+        const cartTotal = document.getElementById('cartTotal');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+
+        function renderMenu() {
+            menuList.innerHTML = '';
+            menuItems.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = 'item';
+                row.innerHTML = `
+                    <div class="item-info">
+                        <strong>${item.name}</strong>
+                        <span>₹${item.price}</span>
+                    </div>
+                    <div class="item-buttons">
+                        <button data-index="${index}" class="add-btn">Add</button>
+                        <button data-index="${index}" class="remove-btn">Remove</button>
+                    </div>
+                `;
+                menuList.appendChild(row);
+            });
+        }
+
+        function renderCart() {
+            cartBody.innerHTML = '';
+            if (cart.size === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = '<td colspan="4" class="empty-message">Cart is empty. Add items from menu.</td>';
+                cartBody.appendChild(emptyRow);
+                cartTotal.textContent = 'Total: ₹0';
+                return;
+            }
+
+            let total = 0;
+            cart.forEach((quantity, itemName) => {
+                const item = menuItems.find(menu => menu.name === itemName);
+                const subtotal = item.price * quantity;
+                total += subtotal;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${quantity}</td>
+                    <td>₹${subtotal}</td>
+                    <td><button class="delete-btn" data-item="${item.name}">Delete</button></td>
+                `;
+                cartBody.appendChild(row);
+            });
+            cartTotal.textContent = `Total: ₹${total}`;
+            attachDeleteButtons();
+        }
+
+        function attachMenuButtons() {
+            document.querySelectorAll('.add-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const index = Number(button.dataset.index);
+                    const item = menuItems[index];
+                    const current = cart.get(item.name) || 0;
+                    cart.set(item.name, current + 1);
+                    renderCart();
+                });
+            });
+            document.querySelectorAll('.remove-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const index = Number(button.dataset.index);
+                    const item = menuItems[index];
+                    const current = cart.get(item.name) || 0;
+                    if (current > 0) {
+                        const next = current - 1;
+                        if (next === 0) cart.delete(item.name);
+                        else cart.set(item.name, next);
+                        renderCart();
+                    }
+                });
+            });
+        }
+
+        function attachDeleteButtons() {
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const item = button.dataset.item;
+                    cart.delete(item);
+                    renderCart();
+                });
+            });
+        }
+
+        checkoutBtn.addEventListener('click', () => {
+            if (cart.size === 0) {
+                alert('Your cart is empty. Add some items first.');
+                return;
+            }
+            alert('Order placed! Total ' + cartTotal.textContent.replace('Total: ', '')); 
+            cart.clear();
+            renderCart();
+        });
+
+        renderMenu();
+        attachMenuButtons();
+        renderCart();
+    </script>
+</body>
+</html>
